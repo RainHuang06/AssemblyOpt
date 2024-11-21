@@ -34,12 +34,11 @@ int main(void)
 
       if (!isspace(iChar)) goto else1;
       
-         if (!iInWord) goto endif2;
+         if (!iInWord) goto endif1;
          
             lWordCount++;
             iInWord = FALSE;
 
-         endif2:
 
       goto endif1;
       else1:
@@ -51,9 +50,9 @@ int main(void)
    goto charIntakeLoop;
    charIntakeLoopEnd:
 
-   if (!iInWord) goto endif3;
+   if (!iInWord) goto endif2;
       lWordCount++;
-   endif3:
+   endif2:
 
    printf("%7ld %7ld %7ld\n", lLineCount, lWordCount, lCharCount);
    return 0;

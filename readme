@@ -160,9 +160,39 @@ particular, what bugs are in your submission?
 ------------------------------------------------------------------------
 What is your mywc program test plan?
 
-Created 2, text files to be read
+Boundary Tests:
+
+mywcempty.txt - This file contains nothing, testing the boundary of 
+there being an empty file, hence returning 0 lines, 0 words, and 0 
+characters
+
+mywcspace.txt - This file contains one space, testing the boundary of 
+there being just one space character, hence returning 0 lines, 0 words,
+but 1 character (space)
+
+mywconeletter.txt - This file contains one letter (we used the letter q),
+testing the boundary of a text file consisting of a single letter, hence 
+returning 0 lines, 1 word (the letter), and 1 character (the letter)
+
+mywcnewline.txt - This file contains one new line (made by pressing enter),
+testing the boundary of a text file consisting of one new line character,
+hence returning 1 line, 0 words, and 1 character (new line)
 
 
+Statement Tests:
+/* has to execute every line of code in mywc.c */ 
+
+mywcstatement.txt - 
+
+
+
+Stress Tests:
+/* 50,000 characters, 1000s, randomly generated, contains every
+legal character */
+
+mywcallchar.txt - This file contains 496 lines, 1499 words, and 49961
+characters, designed to test the stress of the programs by maximizing the
+inputs (no more than 1000 lines and 50000 words).
 
 ------------------------------------------------------------------------
 What are the CPU times consumed by the programs from Parts 2a, 2b, 2d,

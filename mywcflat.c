@@ -45,7 +45,7 @@ int main(void)
          if (iInWord) goto endif1;
             iInWord = TRUE;
       endif1:
-      if (iChar == '\n')
+      if (iChar != '\n') goto charIntakeLoop;
          lLineCount++;
    goto charIntakeLoop;
    charIntakeLoopEnd:

@@ -182,7 +182,10 @@ hence returning 1 line, 0 words, and 1 character (new line)
 Statement Tests:
 /* has to execute every line of code in mywc.c */ 
 
-mywcstatement.txt - 
+mywcstatement.txt - Using a bit of the script from the First Harry Potter
+movie, we created a text file that was able to hit everyline of code, making
+sure to not end with a space character as to allow the line 'if (iInWord)'
+and its contents (lWordCount+++) to be accessed. 
 
 
 
@@ -190,7 +193,7 @@ Stress Tests:
 /* 50,000 characters, 1000s, randomly generated, contains every
 legal character */
 
-mywcallchar.txt - This file contains 496 lines, 1499 words, and 49961
+mywcallcharacters.txt - This file contains 1000 lines, 1981 words, and 49909
 characters, designed to test the stress of the programs by maximizing the
 inputs (no more than 1000 lines and 50000 words).
 

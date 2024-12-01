@@ -18,12 +18,17 @@ enum {FALSE, TRUE};
 static long BigInt_larger(long lLength1, long lLength2)
 {
    long lLarger;
+
    if (lLength2 > lLength1) goto l2Larger;
+
       lLarger = lLength1;
       goto returnLarger;
+
    l2Larger:
+
       lLarger = lLength2;
     returnLarger:
+
    return lLarger;
 }
 
@@ -58,32 +63,35 @@ int BigInt_add(BigInt_T oAddend1, BigInt_T oAddend2, BigInt_T oSum)
    lIndex = 0;
    /*for (lIndex = 0; lIndex < lSumLength; lIndex++)*/
    if(lIndex >= lSumLength) goto endOfLoop;
-   {
+
       ulSum = ulCarry;
       ulCarry = 0;
 
       ulSum += oAddend1->aulDigits[lIndex];
-      if (ulSum >= oAddend1->aulDigits[lIndex]) /* Check for overflow. */
+      if (ulSum >= oAddend1->aulDigits[lIndex]) goto carry1; /* Check for overflow. */
          ulCarry = 1;
 
+      carry1:
+
       ulSum += oAddend2->aulDigits[lIndex];
-      if (ulSum >= oAddend2->aulDigits[lIndex]) /* Check for overflow. */
+      if (ulSum >= oAddend2->aulDigits[lIndex]) goto carry2; /* Check for overflow. */
          ulCarry = 1;
+      
+      carry2:
 
       oSum->aulDigits[lIndex] = ulSum;
       lIndex++;
-   }
-   endOfLoop;
+      
+   endOfLoop:
 
    /* Check for a carry out of the last "column" of the addition. */
-   if (ulCarry == 1)
-   {
-      if (lSumLength == MAX_DIGITS)
+   if (ulCarry != 1) goto noCarry;
+      if (lSumLength != MAX_DIGITS) goto notMax;
          return FALSE;
+      notMax:
       oSum->aulDigits[lSumLength] = 1;
       lSumLength++;
-   }
-
+   noCarry:
    /* Set the length of the sum. */
    oSum->lLength = lSumLength;
 

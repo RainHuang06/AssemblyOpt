@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------*/
 /* bigintadd.c                                                        */
-/* Author: Rain Huang                                             */
+/* Author: Rain Huang, Matthew Okechukwu                              */
 /*--------------------------------------------------------------------*/
 
 #include "bigint.h"
@@ -27,7 +27,8 @@ static long BigInt_larger(long lLength1, long lLength2)
    l2Larger:
 
       lLarger = lLength2;
-    returnLarger:
+
+   returnLarger:
 
    return lLarger;
 }
@@ -57,11 +58,16 @@ int BigInt_add(BigInt_T oAddend1, BigInt_T oAddend2, BigInt_T oSum)
    /* Clear oSum's array if necessary. */
    if (oSum->lLength < lSumLength) goto noMemset;
       memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long));
-    noMemset:
+
+   noMemset:
+
    /* Perform the addition. */
+
    ulCarry = 0;
    lIndex = 0;
+
    /*for (lIndex = 0; lIndex < lSumLength; lIndex++)*/
+
    loopStart:
    if(lIndex >= lSumLength) goto endOfLoop;
 
@@ -82,7 +88,9 @@ int BigInt_add(BigInt_T oAddend1, BigInt_T oAddend2, BigInt_T oSum)
 
       oSum->aulDigits[lIndex] = ulSum;
       lIndex++;
+
       goto loopStart;
+
    endOfLoop:
 
    /* Check for a carry out of the last "column" of the addition. */
@@ -92,7 +100,9 @@ int BigInt_add(BigInt_T oAddend1, BigInt_T oAddend2, BigInt_T oSum)
       notMax:
       oSum->aulDigits[lSumLength] = 1;
       lSumLength++;
+
    noCarry:
+   
    /* Set the length of the sum. */
    oSum->lLength = lSumLength;
 

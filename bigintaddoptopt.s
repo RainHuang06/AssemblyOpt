@@ -18,55 +18,7 @@
 
 .section .text
 
-// Local Variable Stack Offsets:
-    //.equ lLarger, 8
-    lLarger .req x21 // Callee-saved
-// Parameter stack offsets:
-    //.equ lLength1, 24 
-    //.equ lLength2, 16
-    lLength1 .req x20 //Callee-saved
-    lLength2 .req x19 //Callee-saved
 
-.equ BIGINTLARGER_STACK_BYTECOUNT, 32
-
-// * Return the larger of lLength1 and lLength2. *
-// static long BigInt_larger(long lLength1, long lLength2)
-BigInt_larger:
-// prologue
-sub sp, sp, BIGINTLARGER_STACK_BYTECOUNT
-stp x30, x19, [sp]
-stp x20, x21, [sp, 16]
-// Move arguments into callee-saved registers
-    mov lLength1, x0
-    mov lLength2, x1
-// long lLarger; 
-
-// if (lLength2 > lLength1) goto l2Larger;
-    cmp lLength2, lLength1
-    bgt l2Larger
-
-// lLarger = lLength1;
-    mov lLarger, lLength1
-
-//  goto returnLarger;
-    b returnLarger
-
-l2Larger:
-
-// lLarger = lLength2;
-    mov lLarger, lLength2
-
-returnLarger:
-
-// epilogue
-// return lLarger;
-    mov x0, lLarger 
-    ldp x30, x19, [sp]
-    ldp x20, x21, [sp, 16]
-    add sp, sp, BIGINTLARGER_STACK_BYTECOUNT
-    ret
-
-    .size BigInt_larger, (. - BigInt_larger)
 
 
 
@@ -115,9 +67,13 @@ BigInt_add:
 // lSumLength = BigInt_larger(oAddend1->lLength, oAddend2->lLength);
     ldr x0, [oAddend1, lLength]
     ldr x1, [oAddend2, lLength]
-    bl BigInt_larger
+    cmp x1, x0
+    bgt l2Larger
+    b afterComp
+l2Larger:
+    mov x0, x1
+afterComp:
     mov lSumLength, x0
-
 // * Clear oSum's array if necessary. *
 // if (oSum->lLength <= lSumLength) goto noMemset;
     ldr x0, [oSum, lLength]
@@ -133,73 +89,55 @@ BigInt_add:
 
 noMemset:
 
-// ulCarry = 0;
-    mov ulCarry, 0
 
 // lIndex = 0;
     mov lIndex, 0
 
 // *for (lIndex = 0; lIndex < lSumLength; lIndex++)*
+do:
+    cmp lIndex, lSumLength
+    mov x4, 0
+    bge endOfLoop
+    //mov x1, 0
+    //mov x2, 0
 
 loopStart:
-
-// if(lIndex >= lSumLength) goto endOfLoop;
-
-    cmp lIndex, lSumLength
-    bge endOfLoop
-
-// ulSum = ulCarry;
-    mov ulSum, ulCarry
-
-// ulCarry = 0;
-    mov ulCarry, 0
-
 // ulSum += oAddend1->aulDigits[lIndex];
+//    add x1, oAddend1, aulDigits
+//    ldr x1, [x1, lIndex, lsl 3]
+//    adcs ulSum, ulSum, x1
+// ulSum += oAddend2->aulDigits[lIndex];
+//    add x1, oAddend2, aulDigits
+//    ldr x1, [x1, lIndex, lsl 3]
+//    adds ulSum, ulSum, x1
+    //msr NZCV, x4
+    mov x3, 0xFFFFFFFFFFFFFFFF
+    adcs x10, x4, x3
+    //mov x5, x1
+    //mov x6, x2
     add x1, oAddend1, aulDigits
     ldr x1, [x1, lIndex, lsl 3]
-    add ulSum, ulSum, x1
-
-// if (ulSum >= oAddend1->aulDigits[lIndex]) goto carry1;
-// x0 still has ulSum, x1 has aulDigits 
-    cmp ulSum, x1
-    bhs carry1
-
-// ulCarry = 1;
-    mov ulCarry, 1
-
-carry1:
-
-// ulSum += oAddend2->aulDigits[lIndex];
-    add x1, oAddend2, aulDigits
-    ldr x1, [x1, lIndex, lsl 3]
-    add ulSum, ulSum, x1
-
-// if (ulSum >= oAddend2->aulDigits[lIndex]) goto carry2;
-// x0 still has ulSum, x1 has aulDigits 
-    cmp ulSum, x1
-    bhs carry2
-
-// ulCarry = 1;
-    mov ulCarry, 1
-
-carry2:
-
+    add x2, oAddend2, aulDigits
+    ldr x2, [x2, lIndex, lsl 3]
+    adcs ulSum, x1, x2
+    adc x4, xzr, xzr
+    //adcs x1, x1, xzr
 // oSum->aulDigits[lIndex] = ulSum;
-    add x1, oSum, aulDigits
-    str ulSum, [x1, lIndex, lsl 3]
+    add x3, oSum, aulDigits
+    str ulSum, [x3, lIndex, lsl 3]
 
 // lIndex++;
-    add lIndex, lIndex, 1
-
+    add lIndex, lIndex, #1
 // goto loopStart;
-    b loopStart
+    cmp lIndex, lSumLength
+    blt loopStart
 
 endOfLoop:
-
+    mov x3, 0xFFFFFFFFFFFFFFFF
+    adds x10, x4, x3
 // * Check for a carry out of the last "column" of the addition. *
 // if (ulCarry != 1) goto noCarry;
-    cmp ulCarry, 1
-    bne noCarry
+    bcc noCarry
 
 // if (lSumLength != MAX_DIGITS) goto notMax;
     cmp lSumLength, MAX_DIGITS

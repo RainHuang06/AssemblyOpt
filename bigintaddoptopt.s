@@ -3,10 +3,15 @@
 
 //Optimization list:
 //Optimization 1: Replace ldr with ldp, and str to stp to reduce operation count
+//Optimization 2: Created guarded loop to reduce iterations spent
+//Optimization 3: Inlined BigInt_larger to increase performance
+//Optimization 4: Used adcs and carry condition to no longer rely on Variable
+//Optimization 5: Used csel in order to prevent branching
 // enum {FALSE, TRUE};
 .equ FALSE, 0
 .equ TRUE, 1
-
+//For overflow capabilities
+.equ LONG_MAX, 0xFFFFFFFFFFFFFFFF
 // MAX_DIGITS
 .equ MAX_DIGITS, 32768
 
@@ -33,13 +38,12 @@
 BigInt_add:
 
 
-// Parameter stack offsets:
-    //.equ oAddend1, 56 
+// Parameter callee-saved registers:
     oAddend1 .req x25
     oAddend2 .req x24
     oSum .req x23
 
-// Local Variable Stack Offsets:
+// Local Variable callee-saved registers:
     ulCarry .req x22 
     ulSum .req x21
     lIndex .req x20
@@ -51,6 +55,7 @@ BigInt_add:
 
 
 // prologue
+    //Set up stack while moving parameters into registers
     sub sp, sp, BIGINTADD_STACK_BYTECOUNT
     stp x30, x19, [sp]
     stp x22, x23, [sp, 32]
@@ -59,8 +64,6 @@ BigInt_add:
     mov oAddend1, x0
     mov oAddend2, x1
     stp x20, x21, [sp, 16]
-// Move arguments into registers
-
 
 
 // * Determine the larger length. *
@@ -68,12 +71,7 @@ BigInt_add:
     ldr x0, [oAddend1, lLength]
     ldr x1, [oAddend2, lLength]
     cmp x1, x0
-    bgt l2Larger
-    b afterComp
-l2Larger:
-    mov x0, x1
-afterComp:
-    mov lSumLength, x0
+    csel lSumLength, x1, x0, HI // equivalent to lSumLength = x1 > x0 ? x1 : x0
 // * Clear oSum's array if necessary. *
 // if (oSum->lLength <= lSumLength) goto noMemset;
     ldr x0, [oSum, lLength]
@@ -96,32 +94,17 @@ noMemset:
 // *for (lIndex = 0; lIndex < lSumLength; lIndex++)*
 do:
     cmp lIndex, lSumLength
-    mov x4, 0
     bge endOfLoop
-    //mov x1, 0
-    //mov x2, 0
-
+    mov x4, 0 //Reset register to prevent bugs
+    mov x5, LONG_MAX //used to propagate carries
 loopStart:
-// ulSum += oAddend1->aulDigits[lIndex];
-//    add x1, oAddend1, aulDigits
-//    ldr x1, [x1, lIndex, lsl 3]
-//    adcs ulSum, ulSum, x1
-// ulSum += oAddend2->aulDigits[lIndex];
-//    add x1, oAddend2, aulDigits
-//    ldr x1, [x1, lIndex, lsl 3]
-//    adds ulSum, ulSum, x1
-    //msr NZCV, x4
-    mov x3, 0xFFFFFFFFFFFFFFFF
-    adcs x10, x4, x3
-    //mov x5, x1
-    //mov x6, x2
+    adds x10, x4, x5 //If x4 has a carry from last loop, adding this to LONG_MAX produces a carry for adcs later.
     add x1, oAddend1, aulDigits
     ldr x1, [x1, lIndex, lsl 3]
     add x2, oAddend2, aulDigits
     ldr x2, [x2, lIndex, lsl 3]
     adcs ulSum, x1, x2
-    adc x4, xzr, xzr
-    //adcs x1, x1, xzr
+    adc x4, xzr, xzr //Storing carry for next iteration
 // oSum->aulDigits[lIndex] = ulSum;
     add x3, oSum, aulDigits
     str ulSum, [x3, lIndex, lsl 3]
@@ -133,9 +116,9 @@ loopStart:
     blt loopStart
 
 endOfLoop:
-    mov x3, 0xFFFFFFFFFFFFFFFF
-    adds x10, x4, x3
+
 // * Check for a carry out of the last "column" of the addition. *
+    adds x10, x4, x5 //This instruction replicates the last addition, setting the flag
 // if (ulCarry != 1) goto noCarry;
     bcc noCarry
 

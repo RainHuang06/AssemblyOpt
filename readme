@@ -146,7 +146,9 @@ Awesome!!!
 Student 2: What is your assessment of the assignment? Was it helpful?
 Was it fun?
 
-Very fun! 
+This assignment made me a far more competent ARM64 developer. However,
+adopting this new mindset and using hardware tricks was very difficult
+and debugging bigintaddoptopt was a bit of a nightmare, to say the least.
 
 
 
@@ -154,7 +156,7 @@ Very fun!
 (optional) What information can you provide about your submission that
 will help your grader to grade it in the most favorable light? In
 particular, what bugs are in your submission?
-
+No bugs. I worked painstakingly to make sure that was the case.
 
 
 ------------------------------------------------------------------------
@@ -201,15 +203,15 @@ inputs (no more than 1000 lines and 50000 words).
 What are the CPU times consumed by the programs from Parts 2a, 2b, 2d,
 2e, and 2f to compute fib(250000) on armlab? Fill in the blanks.
 
-Part 2a:  _____ seconds
+Part 2a:  _11.955875____ seconds
 
-Part 2b:  _____ seconds
+Part 2b:  __2.632654___ seconds
 
-Part 2d:  _____ seconds
+Part 2d:  __7.864276___ seconds
 
-Part 2e:  _____ seconds
+Part 2e:  __3.406650___ seconds
 
-Part 2f:  _____ seconds
+Part 2f:  __2.177378___ seconds
 
 
 

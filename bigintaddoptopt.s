@@ -7,11 +7,14 @@
 //Optimization 3: Inlined BigInt_larger to increase performance
 //Optimization 4: Used adcs and carry condition to no longer rely on Variable
 //Optimization 5: Used csel in order to prevent branching
+
 // enum {FALSE, TRUE};
 .equ FALSE, 0
 .equ TRUE, 1
+
 //For overflow capabilities
 .equ LONG_MAX, 0xFFFFFFFFFFFFFFFF
+
 // MAX_DIGITS
 .equ MAX_DIGITS, 32768
 
